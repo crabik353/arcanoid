@@ -18,6 +18,9 @@ background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 font = pygame.font.Font(None, 74)
 small_font = pygame.font.Font(None, 36)
 
+sound_enabled = True
+cheats_enabled = False
+
 def start_screen():
     while True:
         screen.blit(background, (0, 0))
@@ -61,6 +64,11 @@ def level_selection():
                     return 1
                 if level2_button.collidepoint(event.pos):
                     return 2
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    result = pause_screen()
+                    if result == "menu":
+                        return "menu"
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, type):
@@ -172,23 +180,58 @@ def game_over_screen():
                 if menu_button.collidepoint(event.pos):
                     return "menu"
 
+def victory_screen():
+    while True:
+        screen.fill(BLACK)
+        text = font.render('Вы победили!', True, WHITE)
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 100))
+
+        restart_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
+        menu_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 70, 200, 50)
+
+        pygame.draw.rect(screen, ORANGE, restart_button)
+        pygame.draw.rect(screen, ORANGE, menu_button)
+
+        restart_text = small_font.render('Пройти заново', True, WHITE)
+        menu_text = small_font.render('Вернуться в меню', True, WHITE)
+
+        screen.blit(restart_text, (restart_button.x + 20, restart_button.y + 15))
+        screen.blit(menu_text, (menu_button.x + 10, menu_button.y + 15))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button.collidepoint(event.pos):
+                    return "restart"
+                if menu_button.collidepoint(event.pos):
+                    return "menu"
+
 def pause_screen():
+    global sound_enabled, cheats_enabled
     while True:
         screen.fill(BLACK)
         text = font.render('Пауза', True, WHITE)
-        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 100))
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 200))
 
-        continue_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
-        menu_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 70, 200, 50)
+        continue_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 100, 200, 50)
+        settings_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
+        menu_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 100, 200, 50)
 
         pygame.draw.rect(screen, ORANGE, continue_button)
+        pygame.draw.rect(screen, ORANGE, settings_button)
         pygame.draw.rect(screen, ORANGE, menu_button)
 
         continue_text = small_font.render('Продолжить', True, WHITE)
+        settings_text = small_font.render('Настройки', True, WHITE)
         menu_text = small_font.render('Вернуться в меню', True, WHITE)
 
         screen.blit(continue_text, (continue_button.x + 20, continue_button.y + 15))
-        screen.blit(menu_text, (menu_button.x + 10, menu_button.y + 15))
+        screen.blit(settings_text, (settings_button.x + 20, settings_button.y + 15))
+        screen.blit(menu_text, (settings_button.x + 10, menu_button.y + 15))
 
         pygame.display.flip()
 
@@ -199,12 +242,56 @@ def pause_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if continue_button.collidepoint(event.pos):
                     return "continue"
+                if settings_button.collidepoint(event.pos):
+                    settings_screen()
                 if menu_button.collidepoint(event.pos):
                     return "menu"
 
+def settings_screen():
+    global sound_enabled, cheats_enabled
+    while True:
+        screen.fill(BLACK)
+        text = font.render('Настройки', True, WHITE)
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 50))
+
+        sound_button = pygame.Rect(WIDTH // 2 - 100, 150, 200, 50)
+        cheats_button = pygame.Rect(WIDTH // 2 - 100, 250, 200, 50)
+        back_button = pygame.Rect(WIDTH // 2 - 100, 350, 200, 50)
+
+        pygame.draw.rect(screen, ORANGE, sound_button)
+        pygame.draw.rect(screen, ORANGE, cheats_button)
+        pygame.draw.rect(screen, ORANGE, back_button)
+
+        sound_text = small_font.render('Выключить звук' if sound_enabled else 'Включить звук', True, WHITE)
+        cheats_text = small_font.render('Включить читы' if not cheats_enabled else 'Выключить читы', True, WHITE)
+        back_text = small_font.render('Назад', True, WHITE)
+
+        screen.blit(sound_text, (sound_button.x + 20, sound_button.y + 15))
+        screen.blit(cheats_text, (cheats_button.x + 20, cheats_button.y + 15))
+        screen.blit(back_text, (back_button.x + 20, back_button.y + 15))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if sound_button.collidepoint(event.pos):
+                    sound_enabled = not sound_enabled
+                    if sound_enabled:
+                        pygame.mixer.music.unpause()
+                    else:
+                        pygame.mixer.music.pause()
+                if cheats_button.collidepoint(event.pos):
+                    cheats_enabled = not cheats_enabled
+                if back_button.collidepoint(event.pos):
+                    return
+
 def game_loop(level):
-    pygame.mixer.music.load("track1.mp3")
-    pygame.mixer.music.play(-1)
+    if sound_enabled:
+        pygame.mixer.music.load("track1.mp3")
+        pygame.mixer.music.play(-1)
 
     all_sprites = pygame.sprite.Group()
     bricks = pygame.sprite.Group()
@@ -219,7 +306,7 @@ def game_loop(level):
     if level == 1:
         for i in range(10):
             for j in range(2):
-                brick = Brick(i * 45 + 10, j * 45 + 50, 1)
+                brick = Brick(i * 45 + 200, j * 45 + 50, 1)
                 all_sprites.add(brick)
                 bricks.add(brick)
     elif level == 2:
@@ -239,9 +326,6 @@ def game_loop(level):
             brick = Brick(WIDTH - 5 * 45 - 10, i * 45 + 50, 3)
             all_sprites.add(brick)
             bricks.add(brick)
-        brick = Brick(4 * 45 + 10, 0, 1)
-        all_sprites.add(brick)
-        bricks.add(brick)
 
     running = True
     paused = False
@@ -255,6 +339,10 @@ def game_loop(level):
                     paused = True
                 if event.key == pygame.K_SPACE and ball.speed_x == 0 and ball.speed_y == 0:
                     ball.launch()
+                if cheats_enabled and event.key == pygame.K_w:
+                    for brick in bricks:
+                        if brick.type != 3:  # Удаляем только обычные кирпичи
+                            brick.kill()
 
         if paused:
             result = pause_screen()
@@ -282,7 +370,8 @@ def game_loop(level):
                     brick.hits += 1
                     if brick.hits == 2:
                         brick.kill()
-                ball.speed_y = -ball.speed_y
+                elif brick.type == 3:
+                    ball.speed_y = -ball.speed_y  # Мяч отскакивает от неломаемых кирпичей
 
             if ball.rect.y >= HEIGHT - 20:
                 balls.remove(ball)
@@ -319,8 +408,14 @@ def game_loop(level):
                     balls.add(new_ball)
                     all_sprites.add(new_ball)
 
-        if len(bricks) == 0:
-            running = False
+        # Проверка победы: остались ли обычные кирпичи
+        if not any(brick.type == 1 for brick in bricks):
+            pygame.mixer.music.stop()
+            result = victory_screen()
+            if result == "restart":
+                return "restart"
+            elif result == "menu":
+                return "menu"
 
         screen.fill(BLACK)
         all_sprites.draw(screen)
