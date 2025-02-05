@@ -75,7 +75,7 @@ def draw_score(score):
 # Функция для отрисовки таймера
 def draw_timer(start_timer):
     if start_timer is not None:
-        elapsed_time = int(start_timer.time() - start_timer)
+        elapsed_time = int(time.time() - start_timer)
         font = pygame.font.Font(None, 36)
         timer_text = font.render(f"Таймер: {elapsed_time}s", True, WHITE)
         screen.blit(timer_text, (SCREEN_WIDTH // 2 - 50, 10))
@@ -532,28 +532,28 @@ def settings_menu():
 
         # Кнопка "Включить/выключить музыку"
         music_hovered = (left_column_x - 100 < mouse_x < left_column_x + 100 and 100 < mouse_y < 150)
-        draw_button("Выключить музыку" if music_enabled else "Включить музыку", left_column_x - 100, 100, 200, 50,
+        draw_button("Выключить музыку" if music_enabled else "Включить музыку", left_column_x - 100, 100, 300, 50,
                     music_hovered, font_size=24)
 
-        # Кнопка "Включить/выключить звуковые эффекты" (продолжение)
+        # Кнопка "Включить/выключить звуковые эффекты"
         sound_effects_hovered = (left_column_x - 100 < mouse_x < left_column_x + 100 and 200 < mouse_y < 250)
         draw_button("Выключить звуковые эффекты" if sound_effects_enabled else "Включить звуковые эффекты",
-                    left_column_x - 100, 200, 200, 50, sound_effects_hovered, font_size=24)
+                    left_column_x - 100, 200, 300, 50, sound_effects_hovered, font_size=24)
 
         # Кнопка "Управление"
         controls_hovered = (left_column_x - 100 < mouse_x < left_column_x + 100 and 300 < mouse_y < 350)
-        draw_button("Управление", left_column_x - 100, 300, 200, 50, controls_hovered, font_size=24)
+        draw_button("Управление", left_column_x - 100, 300, 300, 50, controls_hovered, font_size=24)
 
         # Правая колонка кнопок
         right_column_x = SCREEN_WIDTH * 3 // 4
 
         # Кнопка "Цвет платформы"
         paddle_color_hovered = (right_column_x - 100 < mouse_x < right_column_x + 100 and 100 < mouse_y < 150)
-        draw_button("Цвет платформы", right_column_x - 100, 100, 200, 50, paddle_color_hovered, font_size=24)
+        draw_button("Цвет платформы", right_column_x - 100, 100, 300, 50, paddle_color_hovered, font_size=24)
 
         # Кнопка "Цвет мяча"
         ball_color_hovered = (right_column_x - 100 < mouse_x < right_column_x + 100 and 200 < mouse_y < 250)
-        draw_button("Цвет мяча", right_column_x - 100, 200, 200, 50, ball_color_hovered, font_size=24)
+        draw_button("Цвет мяча", right_column_x - 100, 200, 300, 50, ball_color_hovered, font_size=24)
 
         # Музыка
         track_text = f"Трек: {current_track_index + 1}"
