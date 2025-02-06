@@ -1,6 +1,7 @@
 import pygame
 import sys
 import time
+import os
 
 pygame.init()
 
@@ -24,23 +25,41 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Загрузка звуков
-paddle_sound = pygame.mixer.Sound("paddle_hit.wav")
-block_sound = pygame.mixer.Sound("block_hit.wav")
-wall_sound = pygame.mixer.Sound("wall_hit.wav")
+try:
+    paddle_sound = pygame.mixer.Sound(os.path.join("sounds", "paddle_hit.wav"))
+    block_sound = pygame.mixer.Sound(os.path.join("sounds", "block_hit.wav"))
+    wall_sound = pygame.mixer.Sound(os.path.join("sounds", "wall_hit.wav"))
+except FileNotFoundError as e:
+    print(f"Ошибка загрузки звука: {e}")
+    sys.exit()
+
+# Музыка
+tracks = []
+for i in range(1, 10):
+    track_path = os.path.join("soundtracks", f"track{i}.mp3")
+    if os.path.exists(track_path):
+        tracks.append(track_path)
+    else:
+        print(f"Файл не найден: {track_path}")
+if not tracks:
+    print("Нет доступных музыкальных треков. Проверьте наличие папки 'soundtracks' в папке проекта Pycharm'a.")
+    sys.exit()
+
+current_track_index = 0
+if len(tracks) > 0:
+    try:
+        pygame.mixer.music.load(tracks[current_track_index])
+        pygame.mixer.music.set_volume(0.5)
+    except Exception as e:
+        print(f"Ошибка загрузки музыки: {e}")
+        sys.exit()
+else:
+    print("Список треков пуст. Проверьте наличие папки 'soundtracks' в папке проекта Pycharm'a.")
+    sys.exit()
 
 # Переменные для управления звуком
 music_enabled = True
 sound_effects_enabled = True
-
-# Музыка
-tracks = [
-    "track1.mp3", "track2.mp3", "track3.mp3",
-    "track4.mp3", "track5.mp3", "track6.mp3",
-    "track7.mp3", "track8.mp3", "track9.mp3"
-]
-current_track_index = 0
-pygame.mixer.music.load(tracks[current_track_index])
-pygame.mixer.music.set_volume(0.5)
 
 # Цвета платформы и мяча
 paddle_color = BLUE
@@ -231,12 +250,12 @@ def level_selection():
         draw_button("Меню", 10, 10, 100, 50, menu_hovered, font_size=24)
 
         # Кнопки уровней
-        for i in range(8):
+        for _ in range(8):
             button_hovered = (
-                    SCREEN_WIDTH // 2 - 100 < mouse_x < SCREEN_WIDTH // 2 + 100 and 100 + i * 60
-                    < mouse_y < 150 + i * 60)
-            draw_button(f"Уровень {i + 1}", SCREEN_WIDTH // 2 - 100, 100 + i * 60, 200, 50,
-                        button_hovered and unlocked_levels[i], font_size=36)
+                    SCREEN_WIDTH // 2 - 100 < mouse_x < SCREEN_WIDTH // 2 + 100 and 100 + _ * 60
+                    < mouse_y < 150 + _ * 60)
+            draw_button(f"Уровень {_ + 1}", SCREEN_WIDTH // 2 - 100, 100 + _ * 60, 200, 50,
+                        button_hovered and unlocked_levels[_], font_size=36)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -245,10 +264,10 @@ def level_selection():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_hovered:
                     levels_running = False
-                for i in range(8):
-                    if (unlocked_levels[i] and SCREEN_WIDTH // 2 - 100 < mouse_x < SCREEN_WIDTH // 2 + 100 and 100 + i *
-                            60 < mouse_y < 150 + i * 60):
-                        play_level(i + 1)
+                for _ in range(8):
+                    if (unlocked_levels[_] and SCREEN_WIDTH // 2 - 100 < mouse_x < SCREEN_WIDTH // 2 + 100 and 100 + _ *
+                            60 < mouse_y < 150 + _ * 60):
+                        play_level(_ + 1)
 
         pygame.display.flip()
         clock.tick(FPS)
